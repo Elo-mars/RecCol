@@ -31,15 +31,12 @@ opath<-opath_s
 # SoupX #
 # ===== #
 
-testDir<-paste0("/staging/leuven/stg_00075/Project/211018_RecCol/Raw_Data/",SAMPLE,"/outs")
-# testDir<-"/home/rstudio/host/UCMB_course/Hemsley_ECC/scRNA-seq/GC108011_H1/outs"
+testDir<-paste0("/path/",SAMPLE,"/outs")
 sc = load10X(testDir)
 sc = autoEstCont(sc)
 out = adjustCounts(sc)
 sample= CreateSeuratObject(out)
-saveRDS(sample, file =paste0(opath,name,"_After_SoupX.rds"))
-# dim(sample)
-### remove the genes expressed less than 3 cells
+# remove the genes expressed less than 3 cells
 gene_sum<-Matrix::rowSums(sample@assays$RNA@data>=3)
 gene_keep_index<-(which(gene_sum>0))
 count.data <- GetAssayData(object = sample[["RNA"]])[rownames(sample)[gene_keep_index],]    
@@ -49,26 +46,10 @@ sample <- SetAssayData(
   assay = "RNA"  
 ) 
 
-
-saveRDS(sample, file =paste0(opath,name,"_After_SoupX_3cellgenes.rds"))
-ggsave(file=paste0(opath,name,"Contamination_fraction.png"))
-
-
-
 # ============================================== #
 # 1) QC and selecting cells for further analysis #
 # ============================================== #
 
-# The number of unique genes detected in each cell.
-# Low-quality cells or empty droplets will often have very few genes
-# Cell doublets or multiplets may exhibit an aberrantly high gene count
-# Similarly, the total number of molecules detected within a cell (correlates strongly with unique genes)
-# The percentage of reads that map to the mitochondrial genome
-# Low-quality / dying cells often exhibit extensive mitochondrial contamination
-# We calculate mitochondrial QC metrics with the PercentageFeatureSet function, which calculates the percentage of counts originating from a set of features
-# We use the set of all genes starting with MT- as a set of mitochondrial genes
-
-# PCA
 if(ORGANISM=="Mouse"){
   sample[["percent.mt"]] <- PercentageFeatureSet(sample, pattern = "^mt-")
 } else {
@@ -83,7 +64,6 @@ dev.off()
 # Filter #
 # ====== #
 
-# PCA
 y = sample@meta.data %>% group_by(orig.ident) %>%
   filter(nFeature_RNA > -Inf, nFeature_RNA < +Inf, percent.mt > -Inf, percent.mt < +Inf, nCount_RNA > -Inf, nCount_RNA < +Inf) %>%
   summarise(n=n())
@@ -95,20 +75,16 @@ x = sample@meta.data %>% group_by(orig.ident) %>%
 x
 write.table(x, paste0(opath,name,"_QC_numberofcells.txt"),col.names=NA, sep="\t")
 
-# features are genes and count_RNA are UMIs
 sample <- subset(sample, subset = nFeature_RNA > 400 & nFeature_RNA < 6000  & percent.mt < 40 & nCount_RNA > 400 & nCount_RNA < 50000)
-
-# sort(Matrix::rowSums(experiment.aggregate@data>=2))
 
 pdf(paste0(opath,name,"_filtered_VlnPlot.pdf"), width = 15, height = 8)
 VlnPlot(sample, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), pt.size = 0.5,ncol = 3)
 dev.off()
 sample
 
-
-# ========================= #
-# cell cycle effect(Elodie method)         #
-# ========================= #
+# ================= #
+# cell cycle effect #
+# ================= #
 # remove gene cycle genes: 
 sample<- NormalizeData(sample, verbose = FALSE)
 gene.use=setdiff(rownames(sample),c(cc.genes.updated.2019$s.genes,cc.genes.updated.2019$g2m.genes))
