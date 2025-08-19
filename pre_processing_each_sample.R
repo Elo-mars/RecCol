@@ -1,4 +1,5 @@
 # R file
+
 SAMPLE="GC110700_SI-GA-D1" # sample name of the directory where the data is
 ORGANISM="Human" # or "Mouse"
 name="GC110700_SI-GA-D1" # nice name you want to see in your plots
