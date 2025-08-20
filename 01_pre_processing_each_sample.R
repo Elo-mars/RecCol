@@ -22,11 +22,10 @@ library("devtools")
 library("SoupX")
 library("DoubletFinder")
 
-mainDir<-"/staging/leuven/stg_00075/Project/211018_RecCol/Result_IM"
+mainDir<-"/path/Result"
 subDir<-paste0("Result_",SAMPLE)
 dir.create(file.path(mainDir, subDir), showWarnings = FALSE)
-opath_s<-paste0(mainDir,"/",subDir,"/")
-opath<-opath_s
+opath<-paste0(mainDir,"/",subDir,"/")
 
 # ===== #
 # SoupX #
