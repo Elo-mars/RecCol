@@ -1,11 +1,3 @@
-# to clean and add Doublet Finder
-
-
-#!/staging/leuven/stg_00075/software/miniconda/envs/RecCol/bin/R --no-save
-
-# HARMONY
-
-
 library("Seurat")
 library("plyr")
 library("dplyr")
@@ -18,53 +10,22 @@ library("gridExtra")
 library("gtable")
 library("readr")
 library("beanplot")
-#library("GSVA")
-#library("limma")
-#library("qusage")
-#library("snow")
 library("gplots") 
 library("RColorBrewer")
 library("devtools")
-#library("sctransform")
 library("harmony")
-#library("SingleR")
-library("MAST")
-#library("fields")
 
 sessionInfo()
-PROJECT="Harmony_Fig2_IBS_lesstime"
-# setwd(paste0(PROJECT,"/"))
-
-project_name="RECCOL_Harmony_Fig2_IBS"
-mainDir<-"/staging/leuven/stg_00075/Project/211018_RecCol/Result_IM"
+project_name="Fig_IBS"
+mainDir<-".../Result"
 subDir<-paste0("Result_",PROJECT)
 dir.create(file.path(mainDir, subDir), showWarnings = FALSE)
-opath_s<-paste0(mainDir,"/",subDir,"/")
-opath<-opath_s
+opath<-paste0(mainDir,"/",subDir,"/")
 setwd(opath)
 reslist<-c(0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,3)
 
 # ALL
 IBS_list = c("GC1003333_C5","GC1003334_D5","GC1004260_D1","GC107954_H12","GC109183_SI-GA-D5","GC109184_SI-GA-E5","GC109290_SI-GA-G5","GC109291_SI-GA-H5","GC110306_SI-GA-H8","GC110307_SI-GA-A9","GC110365_SI-GA-C9","GC110366_SI-GA-D9","GC110704_SI-GA-H1","GC110705_SI-GA-A2","GC109185_SI-GA-F5","GC109691_SI-GA-D6","GC109692_SI-GA-E6","GC109902_SI-GA-F6","GC109903_SI-GA-G6","GC110698_SI-GA-B1","GC110699_SI-GA-C1","GC111007_SI-GA-G6","GC111008_SI-GA-H6","GC112065_SI-GA-G5","GC112066_SI-GA-H5", "GC108008_E1","GC108009_F1","GC108546_SI-GA-A3","GC108547_SI-GA-B3","GC110186_SI-GA-A8","GC110187_SI-GA-B8","GC110460_SI-GA-E9","GC110461_SI-GA-F9","GC110697_SI-GA-A1","GC110700_SI-GA-D1","GC110701_SI-GA-E1","GC111344_SI-GA-G7","GC111345_SI-GA-H7","GC112063_SI-GA-E5","GC112064_SI-GA-F5")   
-
-# HV
-HV_list <-c("GC1003333_C5","GC1003334_D5","GC1004260_D1","GC107954_H12","GC109183_SI-GA-D5","GC109184_SI-GA-E5","GC109290_SI-GA-G5","GC109291_SI-GA-H5","GC110306_SI-GA-H8","GC110307_SI-GA-A9","GC110365_SI-GA-C9","GC110366_SI-GA-D9","GC110704_SI-GA-H1","GC110705_SI-GA-A2")
-
-# IBS-C
-IBS_C_list <-c("GC109185_SI-GA-F5","GC109691_SI-GA-D6","GC109692_SI-GA-E6","GC109902_SI-GA-F6","GC109903_SI-GA-G6","GC110698_SI-GA-B1","GC110699_SI-GA-C1","GC111007_SI-GA-G6","GC111008_SI-GA-H6","GC112065_SI-GA-G5","GC112066_SI-GA-H5")
-
-# IBS-D
-IBS_D_list <-c("GC108008_E1","GC108009_F1","GC108546_SI-GA-A3","GC108547_SI-GA-B3","GC110186_SI-GA-A8","GC110187_SI-GA-B8","GC110460_SI-GA-E9","GC110461_SI-GA-F9","GC110697_SI-GA-A1","GC110700_SI-GA-D1","GC110701_SI-GA-E1","GC111344_SI-GA-G7","GC111345_SI-GA-H7","GC112063_SI-GA-E5","GC112064_SI-GA-F5")
-
-
-# IBS C and D
-IBS_all_list <-c("GC109185_SI-GA-F5","GC109691_SI-GA-D6","GC109692_SI-GA-E6","GC109902_SI-GA-F6","GC109903_SI-GA-G6","GC110698_SI-GA-B1","GC110699_SI-GA-C1","GC111007_SI-GA-G6","GC111008_SI-GA-H6","GC112065_SI-GA-G5","GC112066_SI-GA-H5","GC108008_E1","GC108009_F1","GC108546_SI-GA-A3","GC108547_SI-GA-B3","GC110186_SI-GA-A8","GC110187_SI-GA-B8","GC110460_SI-GA-E9","GC110461_SI-GA-F9","GC110697_SI-GA-A1","GC110700_SI-GA-D1","GC110701_SI-GA-E1","GC111344_SI-GA-G7","GC111345_SI-GA-H7","GC112063_SI-GA-E5","GC112064_SI-GA-F5")
-
-# TODO
-# Male_list
-# Female_list
-# pain score
-# 
 
 sample_list<-list()
 for (i in (1:length(IBS_list))) {
@@ -183,6 +144,196 @@ combined <- FindNeighbors(combined, reduction = "harmony", dims = 1:35, k.param 
 combined <- FindClusters(combined, resolution = reslist)
 saveRDS(combined, "after_runharmony.rds")
 head(combined@meta.data)
+
+# ============== #
+# Doublet Finder #
+# ============== #
+
+# DOUBLET FINDER 3 
+# define the function
+
+doubletFinder_v3 <- function(seu, PCs, pN = 0.25, pK, nExp, reuse.pANN = FALSE, sct = FALSE) {
+  require(Seurat); require(fields); require(KernSmooth)
+  ## Generate new list of doublet classificatons from existing pANN vector to save time
+  if (reuse.pANN != FALSE ) {
+    pANN.old <- seu@meta.data[ , reuse.pANN]
+    classifications <- rep("Singlet", length(pANN.old))
+    classifications[order(pANN.old, decreasing=TRUE)[1:nExp]] <- "Doublet"
+    seu@meta.data[, paste("DF.classifications",pN,pK,nExp,sep="_")] <- classifications
+    return(seu)
+  }
+  
+  if (reuse.pANN == FALSE) {
+    ## Make merged real-artifical data
+    real.cells <- rownames(seu@meta.data)
+    data <- seu@assays$RNA@counts[, real.cells]
+    n_real.cells <- length(real.cells)
+    n_doublets <- round(n_real.cells/(1 - pN) - n_real.cells)
+    print(paste("Creating",n_doublets,"artificial doublets...",sep=" "))
+    real.cells1 <- sample(real.cells, n_doublets, replace = TRUE)
+    real.cells2 <- sample(real.cells, n_doublets, replace = TRUE)
+    doublets <- (data[, real.cells1] + data[, real.cells2])/2
+    colnames(doublets) <- paste("X", 1:n_doublets, sep = "")
+    data_wdoublets <- cbind(data, doublets)
+    
+    ## Store important pre-processing information
+    orig.commands <- seu@commands
+    
+    ## Pre-process Seurat object
+    if (sct == FALSE) {
+      print("Creating Seurat object...")
+      seu_wdoublets <- CreateSeuratObject(counts = data_wdoublets)
+      
+      print("Normalizing Seurat object...")
+      seu_wdoublets <- NormalizeData(seu_wdoublets,
+                                     normalization.method = orig.commands$NormalizeData.RNA@params$normalization.method,
+                                     scale.factor = orig.commands$NormalizeData.RNA@params$scale.factor,
+                                     margin = orig.commands$NormalizeData.RNA@params$margin)
+      
+      print("Finding variable genes...")
+      seu_wdoublets <- FindVariableFeatures(seu_wdoublets,
+                                            selection.method = orig.commands$FindVariableFeatures.RNA$selection.method,
+                                            loess.span = orig.commands$FindVariableFeatures.RNA$loess.span,
+                                            clip.max = orig.commands$FindVariableFeatures.RNA$clip.max,
+                                            mean.function = orig.commands$FindVariableFeatures.RNA$mean.function,
+                                            dispersion.function = orig.commands$FindVariableFeatures.RNA$dispersion.function,
+                                            num.bin = orig.commands$FindVariableFeatures.RNA$num.bin,
+                                            binning.method = orig.commands$FindVariableFeatures.RNA$binning.method,
+                                            nfeatures = orig.commands$FindVariableFeatures.RNA$nfeatures,
+                                            mean.cutoff = orig.commands$FindVariableFeatures.RNA$mean.cutoff,
+                                            dispersion.cutoff = orig.commands$FindVariableFeatures.RNA$dispersion.cutoff)
+      
+      print("Scaling data...")
+      seu_wdoublets <- ScaleData(seu_wdoublets,
+                                 features = orig.commands$ScaleData.RNA$features,
+                                 model.use = orig.commands$ScaleData.RNA$model.use,
+                                 do.scale = orig.commands$ScaleData.RNA$do.scale,
+                                 do.center = orig.commands$ScaleData.RNA$do.center,
+                                 scale.max = orig.commands$ScaleData.RNA$scale.max,
+                                 block.size = orig.commands$ScaleData.RNA$block.size,
+                                 min.cells.to.block = orig.commands$ScaleData.RNA$min.cells.to.block)
+      
+      print("Running PCA...")
+      seu_wdoublets <- RunPCA(seu_wdoublets,
+                              features = orig.commands$ScaleData.RNA$features,
+                              npcs = length(PCs),
+                              rev.pca =  orig.commands$RunPCA.RNA$rev.pca,
+                              weight.by.var = orig.commands$RunPCA.RNA$weight.by.var,
+                              verbose=FALSE)
+      pca.coord <- seu_wdoublets@reductions$pca@cell.embeddings[ , PCs]
+      cell.names <- rownames(seu_wdoublets@meta.data)
+      nCells <- length(cell.names)
+      rm(seu_wdoublets); gc() # Free up memory
+    }
+    
+    if (sct == TRUE) {
+      require(sctransform)
+      print("Creating Seurat object...")
+      seu_wdoublets <- CreateSeuratObject(counts = data_wdoublets)
+      
+      print("Running SCTransform...")
+      seu_wdoublets <- SCTransform(seu_wdoublets)
+      
+      print("Running PCA...")
+      seu_wdoublets <- RunPCA(seu_wdoublets, npcs = length(PCs))
+      pca.coord <- seu_wdoublets@reductions$pca@cell.embeddings[ , PCs]
+      cell.names <- rownames(seu_wdoublets@meta.data)
+      nCells <- length(cell.names)
+      rm(seu_wdoublets); gc()
+    }
+    
+    ## Compute PC distance matrix
+    print("Calculating PC distance matrix...")
+    dist.mat <- fields::rdist(pca.coord)
+    
+    ## Compute pANN
+    print("Computing pANN...")
+    pANN <- as.data.frame(matrix(0L, nrow = n_real.cells, ncol = 1))
+    rownames(pANN) <- real.cells
+    colnames(pANN) <- "pANN"
+    k <- round(nCells * pK)
+    for (i in 1:n_real.cells) {
+      neighbors <- order(dist.mat[, i])
+      neighbors <- neighbors[2:(k + 1)]
+      neighbor.names <- rownames(dist.mat)[neighbors]
+      pANN$pANN[i] <- length(which(neighbors > n_real.cells))/k
+    }
+    
+    print("Classifying doublets..")
+    classifications <- rep("Singlet",n_real.cells)
+    classifications[order(pANN$pANN[1:n_real.cells], decreasing=TRUE)[1:nExp]] <- "Doublet"
+    seu@meta.data[, paste("pANN",pN,pK,nExp,sep="_")] <- pANN[rownames(seu@meta.data), 1]
+    seu@meta.data[, paste("DF.classifications",pN,pK,nExp,sep="_")] <- classifications
+    return(seu)
+  }
+}
+
+Object = FC
+Object = SetIdent(object = Object, value = "orig.ident")
+table(Object@active.ident)
+
+#Idents(Object) <- "Sample"
+#Object@meta.data$orig.ident<- "Sample"
+head(Object@meta.data)
+Object$pANN <- "NA"
+Object$pANNPredictions <- "NA"
+head(Object@meta.data)
+
+
+for(sample in unique(Object$orig.ident)){
+  sample.cluster <- subset(Object, idents = sample)
+  print(paste0("sample:", sample))
+  length(rownames(sample.cluster@meta.data))
+  expected.doublets <- ceiling(0.039 * length(rownames(sample.cluster@meta.data)))
+  # sample.cluster <- doubletFinder_v3(sample.cluster, PCs = 1:20, nExp = expected.doublets, pN = 0.25, pK = 0.01)
+  sample.cluster  <- doubletFinder_v3(sample.cluster, PCs = 1:20, pN = 0.25, pK = 0.01, nExp = expected.doublets, reuse.pANN = FALSE, sct=TRUE)
+  sample.cluster$pANN <- sample.cluster@meta.data[colnames(sample.cluster), paste("pANN_0.25_0.01", expected.doublets, sep = "_")]
+  sample.cluster$pANNPredictions <- sample.cluster@meta.data[colnames(sample.cluster), paste("DF.classifications_0.25_0.01", expected.doublets, sep = "_")]
+  Object$pANN[colnames(sample.cluster)] <- sample.cluster$pANN[colnames(sample.cluster)]
+  Object$pANNPredictions[colnames(sample.cluster)] <- sample.cluster$pANNPredictions[colnames(sample.cluster)]
+  sample.cluster <- NULL
+}
+
+head(Object@meta.data)
+
+FC@meta.data = Object@meta.data
+head(FC@meta.data)
+
+x = FC@meta.data
+write.table(x, "DF_metadata.txt",col.names=NA, sep="\t")
+
+pdf("doublets.pdf")
+DimPlot(Object,pt.size = 0.1,label=F, label.size = 0,reduction = "umap",group.by = "pANNPredictions" )+theme(aspect.ratio = 1)
+dev.off()
+
+Idents(FC)="RNA_snn_res.3"
+
+table(FC@meta.data$RNA_snn_res.3)
+# try this way:
+Idents(FC)="pANNPredictions"
+table(FC@active.ident)
+
+#Singlet Doublet 
+# 357027   14502 
+
+#subset all the doublets
+FC # 371,529 cells
+FC2 = subset(FC, idents="Singlet")
+FC2 #357,027 Cells
+
+# umap of only these
+pdf("singlets_per_PANN.pdf")
+DimPlot(FC2,pt.size = 0.1,label=F, label.size = 0,reduction = "umap",group.by = "pANNPredictions" )+theme(aspect.ratio = 1)
+dev.off()
+
+pdf("singlets_per_cluster.pdf")
+DimPlot(FC2,pt.size = 0.1,label=F, label.size = 0,reduction = "umap",group.by = "RNA_snn_res.1.4" )+theme(aspect.ratio = 1)
+dev.off()
+
+saveRDS(FC2, "FC_removed_doublet_cells.rds")
+
+
+
 
 # p1 <- DimPlot(combined, reduction = "umap", group.by = "orig.ident", pt.size=0.1, label = F, label.size=3.5)
 # # p2 <- DimPlot(combined, reduction = "umap", group.by = "Status",pt.size=0.1, label = F, label.size=3.5,  repel = TRUE) 
