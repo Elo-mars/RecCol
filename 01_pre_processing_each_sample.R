@@ -116,28 +116,6 @@ sample@meta.data$Diaorrhea <- "Yes"
 sample@meta.data$Constipation <- "No"
 sample@meta.data$Tissue <- "Rectum"
 
-
-                                  orig.ident nCount_RNA nFeature_RNA percent.mt
-GC1003333_C5_AAACCCATCACCTGTC-1 GC1003333_C5   3710.970         1163   9.549679
-GC1003333_C5_AAACGAACACGACAAG-1 GC1003333_C5   2487.573          864  16.015289
-                                    S.Score  G2M.Score Phase     old.ident
-GC1003333_C5_AAACCCATCACCTGTC-1 -0.07302084 -0.1358938    G1 SeuratProject
-GC1003333_C5_AAACGAACACGACAAG-1 -0.09090793 -0.1034614    G1 SeuratProject
-                                Status Subtype      PIN RNA_snn_res.3
-GC1003333_C5_AAACCCATCACCTGTC-1     HV      HV PIN_1337             7
-GC1003333_C5_AAACGAACACGACAAG-1     HV      HV PIN_1337             3
-                                Pain_score   Age_group Sex Diaorrhea
-GC1003333_C5_AAACCCATCACCTGTC-1       none age31_to_40   F        No
-GC1003333_C5_AAACGAACACGACAAG-1       none age31_to_40   F        No
-                                Constipation Tissue           Previous_Cluster
-GC1003333_C5_AAACCCATCACCTGTC-1           No Rectum            GC-intermediate
-GC1003333_C5_AAACGAACACGACAAG-1           No Rectum CA1+ CEACAM7+ AbC-immature
-                                   UMAP_1    UMAP_2         Previous_Cluster_2
-GC1003333_C5_AAACCCATCACCTGTC-1 -5.399237  5.049421            GC-intermediate
-GC1003333_C5_AAACGAACACGACAAG-1 -1.564524 -4.608932 CA1+ CEACAM7+ AbC-immature
-                                                   Cluster
-GC1003333_C5_AAACCCATCACCTGTC-1            GC-intermediate
-
 # ==================== #
 # Normalizing the data #
 # ==================== #
