@@ -1,3 +1,5 @@
+# R file
+
 library("Seurat")
 library("plyr")
 library("dplyr")
@@ -17,7 +19,7 @@ library("harmony")
 
 sessionInfo()
 project_name="Fig_IBS"
-mainDir<-".../Result"
+mainDir<-"/path/Result"
 subDir<-paste0("Result_",PROJECT)
 dir.create(file.path(mainDir, subDir), showWarnings = FALSE)
 opath<-paste0(mainDir,"/",subDir,"/")
