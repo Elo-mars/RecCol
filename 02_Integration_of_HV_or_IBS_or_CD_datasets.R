@@ -39,14 +39,8 @@ for (i in (1:length(IBS_list))) {
 }  
 head(sample_list[[i]])
 
-# =========== #
-# Violin plot #
-# =========== #
-
-# All together for the pptx
 GR <- merge(x = sample_list[[1]], 
             y = c(sample_list[[2]],sample_list[[3]],...),add.cell.ids = IBS_list, project = project_name)
-
 
 GR
 head(GR@meta.data)
@@ -67,6 +61,10 @@ dev.off()
 
 combined = GR
 tail(combined@meta.data)
+
+# =============================== #
+# Processing of the combined data #
+# =============================== #
 
 library(future)
 plan("multiprocess", workers = 60) 
@@ -256,18 +254,20 @@ dev.off()
 saveRDS(FC2, "FC_removed_doublet_cells.rds")
 combined=FC2
 
+# ===== #
+# Plots #
+# ===== #
+
 p1 = DimPlot(combined, reduction = "umap", group.by = "orig.ident", pt.size=0.1, label = F, label.size=3.5)                                                                                                                                                           
 p2 = DimPlot(combined, reduction = "umap", group.by = "Status",pt.size=0.1, label = F, label.size=3.5,  repel = TRUE)                                                                                                                                                 
 p3 = DimPlot(combined, reduction = "umap", group.by = "PIN",pt.size=0.1, label = F, label.size=3.5,  repel = TRUE) 
 p4 = DimPlot(combined, reduction = "umap", group.by = "Subtype",pt.size=0.1, label = F, label.size=3.5,  repel = TRUE)                                                                                                                                                
                                                                                                                                                                                                                                                                        
-pdf("umap_combined.pdf", width=15, height=15)                                                                                                                                                                                                                           
+pdf("umap_combined.pdf", width=15, height=15)
 plot_grid(p1,p2,p3,p4)                                                                                                                                                                                                                                                 
 dev.off()                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                       
-                                                                                                                                                                                                                                                                       
-for (metadata in c("Status","Subtype","orig.ident","PIN")){                                                                                                                                                                                                                  
-                                                                                                                                                                                                                                                                       
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+for (metadata in c("Status","Subtype","orig.ident","PIN")){
 combined <- SetIdent(object = combined, value = metadata)                                                                                                                                                                                                              
 pdf(paste0("Split_",metadata,".pdf"), width=40)                                                                                                                                                                                                                        
 print(DimPlot(combined, reduction = "umap", split.by = metadata))                                                                                                                                                                                                      
@@ -277,15 +277,10 @@ pdf(paste0("Split_",metadata,"_NoLegend.pdf"), width=40)
 print(DimPlot(combined, reduction = "umap", split.by = metadata) + NoLegend())                                                                                                                                                                                         
 dev.off()                                                                                                                                                                                                                                                              
 }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-                                                                                                                                                                                                                                                                       
-# ================================================ #                                                                                                                                                                                                                   
-# Run non-linear dimensional reduction (UMAP/tSNE) #                                                                                                                                                                                                                   
-# ================================================ #                                                                                                                                                                                                                   
-                                                                                                                                                                                                                                                                       
-# CCA only                                                                                                                                                                                                                                                             
+
 NPC=35
-Idents(FC)                                                                                                                                                                                                                                                             
-                                                                                                                                                                                                                                                                       
+Idents(FC) 
+
 for (metadata in c("Status","Subtype","orig.ident","PIN")){                                                                                                                                                                                                                  
 Seurat_per_sample_Ident <- SetIdent(object = FC, value = metadata)                                                                                                                                                                                                     
 Seurat_per_sample <- RunUMAP(Seurat_per_sample_Ident, dims = 1:NPC, reduction="harmony")                                                                                                                                                                               
@@ -301,7 +296,7 @@ dev.off()
 head(FC@meta.data)
 saveRDS(FC, file = "combined_FC.rds")
 
-pdf("Combined_Clusters_diff_res.pdf")                                                                                                                                                                                                                         [97/1964]
+pdf("Combined_Clusters_diff_res.pdf")
 for (resolution in c("0.4","0.5","0.6","0.7","0.8","0.9","1","1.1","1.2","1.3","1.4","1.5","1.6","3")){
 Seurat <- SetIdent(object = FC, value = paste0('RNA_snn_res.',resolution))
 Seurat <- RunUMAP(Seurat, dims = 1:NPC, reduction = "harmony")
@@ -314,6 +309,9 @@ head(FC@meta.data)
 u=FC@meta.data
 write.table(u,"Combined_metadata.txt",col.names=NA, sep="\t")
 
+# ====== #
+# Tables #
+# ====== #
 
 for (resolution in c("0.4","0.5","0.6","0.7","0.8","0.9","1","1.1","1.2","1.3","1.4","1.5","1.6","3")){
 Seurat_reso <- SetIdent(object = FC, value = paste0('RNA_snn_res.',resolution))
@@ -337,6 +335,10 @@ cell_perC_perS=table(Seurat_reso@active.ident, Seurat_reso@meta.data$PIN)
 cell_perC_perS
 write.table(cell_perC_perS, paste0("Combined_res_",resolution,"_cell_per_c_per_PIN.txt"),col.names=NA, sep="\t")
 }
+
+# ================ #
+# Find All Markers #
+# ================ #
 
 # make sure for this part your Seurat version is not 5 - not using the presto package, it gave us weird results!
 for (resolution in c("0.4","0.5","0.6","0.7","0.8","0.9","1","1.1","1.2","1.3","1.4","1.5","1.6","3")){
