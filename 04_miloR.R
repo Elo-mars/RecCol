@@ -55,6 +55,7 @@ table(FC@meta.data$orig.ident, FC@meta.data$Tissue)
 
 # it's only one vs one, you will need to remove a group if you have more than 2
 # sub_SO<-FC[,!(FC@active.ident %in% c("1_IBS-D"))] # the one you remove
+
 # if you don't remove any
 sub_SO<-FC
 
