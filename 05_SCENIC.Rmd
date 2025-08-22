@@ -1,6 +1,7 @@
 # mix of R and python
 
 # R
+```{r}
 library(Seurat)
 PROJECT="/path/Figure_IBS"
 setwd(PROJECT)
@@ -25,10 +26,12 @@ write.table(data.frame("cell_id"=rownames(exprMat),exprMat),file="exprMat.tsv",r
 
 q()
 n
+```
 
 # SCENIC: check there for info: https://pyscenic.readthedocs.io/en/latest/installation.html
 
 # Python
+```{python}
 SCENIC_IMAGE=/path/software/SCENIC/aertslab-pyscenic-0.12.1.sif
 SCENIC_RESOURCES=/path/software/SCENIC
 DATA_FOLDER=$1
@@ -63,9 +66,10 @@ pyscenic aucell \
 /scenicdata/regulons.csv \
 -o /scenicdata/auc_mtx.csv \
 --num_workers $NR_WORKERS
-
+```
 
 # R
+```{r}
 library(Seurat)
 PROJECT="/path/Figure_IBS/SCENIC/"
 setwd(PROJECT)
@@ -140,6 +144,6 @@ Idents(Seurat_Dotplot) = "Cluster"
 
 plot = DotPlot(Seurat_Dotplot,assay="SCENIC", features = rev(markers.to.plot), dot.scale = 4) + scale_color_viridis(option= scale) + RotatedAxis() + theme(plot.margin = unit(c(0.1,0.1,0.1,2), "cm")) + theme(axis.text=element_text(size=10))
 ggsave("TF_dotplot_top5_genes_all_clusters.pdf",height = 5, width = 15)
-
+```
 
 
