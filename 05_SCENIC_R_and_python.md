@@ -1,5 +1,5 @@
 
-```{r}
+```r
 library(Seurat)
 PROJECT="/path/Figure_IBS"
 setwd(PROJECT)
@@ -28,7 +28,7 @@ n
 
 SCENIC: check there for info: https://pyscenic.readthedocs.io/en/latest/installation.html
 
-```{python}
+```python
 SCENIC_IMAGE=/path/software/SCENIC/aertslab-pyscenic-0.12.1.sif
 SCENIC_RESOURCES=/path/software/SCENIC
 DATA_FOLDER=$1
@@ -65,7 +65,7 @@ pyscenic aucell \
 --num_workers $NR_WORKERS
 ```
 
-```{r}
+```r
 library(Seurat)
 PROJECT="/path/Figure_IBS/SCENIC/"
 setwd(PROJECT)
